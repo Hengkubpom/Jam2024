@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Jam2024
@@ -33,6 +34,13 @@ namespace Jam2024
         private float timeforcircle = 0;   //reset
         private float timecreate = 1;    //reset
         private int minute = 0, second = 0;   //reset
+
+        private int highesttime = 0;
+
+        private string filepath;
+        private FileStream file;
+        private BinaryReader reader;
+        private BinaryWriter writer;
         enum ScreenState
         {
             menu,
@@ -52,7 +60,12 @@ namespace Jam2024
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            screen = ScreenState.menu;
+            screen = ScreenState.menu; 
+            filepath = Path.Combine(@"Content/data/highest.bin");
+            file = new FileStream(filepath, FileMode.Open, FileAccess.Read);
+            reader = new BinaryReader(file);
+            highesttime = reader.ReadInt32();
+            reader.Close();
             base.Initialize();
         }
 
@@ -86,6 +99,17 @@ namespace Jam2024
 
             oldks = ks;
             oldms = ms;
+
+            //reset highest
+            if (ks.IsKeyDown(Keys.F10))
+            {
+                highesttime = 0;
+                file = new FileStream(filepath, FileMode.Create, FileAccess.Write);
+                writer = new BinaryWriter(file);
+                writer.Write((int)0);
+                writer.Flush();
+                writer.Close();
+            }
 
             // TODO: Add your update logic here
 
@@ -236,6 +260,15 @@ namespace Jam2024
         protected void update_end(GameTime gameTime)
         {
             b_reset = new Rectangle(500, 500, 100, 70);
+            if(time > highesttime)
+            {
+                highesttime = (int)time;
+                file = new FileStream(filepath, FileMode.Create, FileAccess.Write);
+                writer = new BinaryWriter(file);
+                writer.Write(highesttime);
+                writer.Flush();
+                writer.Close();
+            }
             if(time >= 60)
             {
                 minute = (int)time / 60;
@@ -259,6 +292,7 @@ namespace Jam2024
         {
             GraphicsDevice.Clear(Color.Blue);
             _spriteBatch.Draw(play_button, b_play, Color.Red);
+            _spriteBatch.DrawString(overfont, "Highest Time: " + highesttime, new Vector2(400, 700), Color.Red);
             if (opentutorial)
             {
                 _spriteBatch.Draw(tutorial, tutorialbox, Color.Lime);

@@ -13,15 +13,16 @@ namespace Jam2024
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
-        private AnimatedTexture left_hand = new AnimatedTexture(Vector2.Zero, 0, 1, 0);
-        private AnimatedTexture right_hand = new AnimatedTexture(Vector2.Zero, 0, 1, 0);
         private KeyboardState ks,oldks;
         private MouseState ms, oldms;
         private SpriteBatch _spriteBatch;
         private Texture2D circle, play_button, reset_button, tutorial, blockbar;
+        private Texture2D hand_default, hand_banana, hand_eto, hand_scissor, hand_kumpe;
+        private Texture2D hand_banana_click, hand_eto_click, hand_scissor_click, hand_kumpe_click;
         private SpriteFont overfont, gameplayfont;
         bool opentutorial = false;  //reset
         private ScreenState screen;
+        private HandState hand;
         private Random rnd = new Random();
         private bool gameplay_start = false, allow_gameopen = true, allow_soundend = true;    //reset
         private List<ClickBu> clickcircle = new List<ClickBu>();    //reset
@@ -51,12 +52,25 @@ namespace Jam2024
 
         static public List<SoundEffect> sEffect = new List<SoundEffect>();
         private int main_volume_effect = 1;
+
+        enum HandState
+        {
+            normal,
+            banana,
+            banana_click,
+            eto,
+            eto_click,
+            scissor,
+            scissor_click,
+            kumpe,
+            kumpe_click
+        }
         enum ScreenState
         {
             menu,
             gameplay,
             end
-        };
+        }
 
         public Game1()
         {
@@ -70,6 +84,7 @@ namespace Jam2024
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            hand = HandState.normal;
             screen = ScreenState.menu; 
             filepath = Path.Combine(@"Content/data/highest.bin");
             file = new FileStream(filepath, FileMode.Open, FileAccess.Read);
@@ -82,8 +97,15 @@ namespace Jam2024
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            left_hand.Load("testtexture", 1, 1, 1, 1, Content);
-            right_hand.Load("testtexture", 1, 1, 1, 1, Content);
+            hand_default = Content.Load<Texture2D>("Hand/hand_default");
+            hand_banana = Content.Load<Texture2D>("Hand/hand_banana");
+            hand_banana_click = Content.Load<Texture2D>("Hand/hand_banana_click");
+            hand_eto = Content.Load<Texture2D>("Hand/hand_eto");
+            hand_eto_click = Content.Load<Texture2D>("Hand/hand_eto_click");
+            hand_scissor = Content.Load<Texture2D>("Hand/hand_scissor");
+            hand_scissor_click = Content.Load<Texture2D>("Hand/hand_scissor_click");
+            hand_kumpe = Content.Load<Texture2D>("Hand/hand_scissor");
+            hand_kumpe_click = Content.Load<Texture2D>("Hand/hand_scissor_click");
             circle = Content.Load<Texture2D>("testtexture");
             play_button = Content.Load<Texture2D>("testtexture");
             reset_button = Content.Load<Texture2D>("testtexture");
@@ -94,6 +116,10 @@ namespace Jam2024
             sEffect.Add(Content.Load<SoundEffect>("Sound/OpenGamePlay"));     //0
             sEffect.Add(Content.Load<SoundEffect>("Sound/hurt"));     //1
             sEffect.Add(Content.Load<SoundEffect>("Sound/death"));     //2
+            sEffect.Add(Content.Load<SoundEffect>("Sound/eto"));     //3
+            sEffect.Add(Content.Load<SoundEffect>("Sound/banana"));     //4
+            sEffect.Add(Content.Load<SoundEffect>("Sound/gungai"));     //5
+            sEffect.Add(Content.Load<SoundEffect>("Sound/kumpe"));     //6
             SoundEffect.MasterVolume = main_volume_effect;
             // TODO: use this.Content to load your game content here
         }
@@ -255,39 +281,80 @@ namespace Jam2024
                     timeforcircle = 0;
                 }
                 //change tool
-                if (ks.IsKeyDown(Keys.D1))
+                if (ks.IsKeyDown(Keys.D1) && oldks.IsKeyUp(Keys.D1))
                 {
                     tool = 1;
                 }
-                else if (ks.IsKeyDown(Keys.D2))
+                else if (ks.IsKeyDown(Keys.D2) && oldks.IsKeyUp(Keys.D2))
                 {
                     tool = 2;
+
                 }
-                else if (ks.IsKeyDown(Keys.D3))
+                else if (ks.IsKeyDown(Keys.D3) && oldks.IsKeyUp(Keys.D3))
                 {
                     tool = 3;
+
                 }
-                else if (ks.IsKeyDown(Keys.D4))
+                else if (ks.IsKeyDown(Keys.D4) && oldks.IsKeyUp(Keys.D4))
                 {
                     tool = 4;
-                }
-
-                //sound & animate
-                if(tool == 1)
-                {
 
                 }
-                else if(tool == 2)
-                {
 
+                //sound & animate onclick
+                if (ms.LeftButton == ButtonState.Pressed && oldms.LeftButton == ButtonState.Released)
+                {
+                    if (tool == 1)
+                    {
+                        var instance = sEffect[3].CreateInstance();
+                        instance.Volume = 0.5f;
+                        instance.Play();
+                        hand = HandState.eto_click;
+                    }
+                    else if (tool == 2)
+                    {
+                        var instance = sEffect[4].CreateInstance();
+                        instance.Volume = 0.5f;
+                        instance.Play();
+                        hand = HandState.banana_click;
+                    }
+                    else if (tool == 3)
+                    {
+                        var instance = sEffect[5].CreateInstance();
+                        instance.Volume = 1f;
+                        instance.Play();
+                        hand = HandState.scissor_click;
+                    }
+                    else if (tool == 4)
+                    {
+                        var instance = sEffect[6].CreateInstance();
+                        instance.Volume = 0.5f;
+                        instance.Play();
+                        hand = HandState.kumpe_click;
+                    }
                 }
-                else if (tool == 3)
+                else if(ms.LeftButton == ButtonState.Released)
                 {
-
-                }
-                else if (tool == 4)
-                {
-
+                    if(tool == 0)
+                    {
+                        hand = HandState.normal;
+                    }
+                    else if (tool == 1)
+                    {
+                        hand = HandState.eto;
+                    }
+                    else if (tool == 2)
+                    {
+                        hand = HandState.banana;
+                    }
+                    else if (tool == 3)
+                    {
+                        hand = HandState.scissor;
+                    }
+                    else if (tool == 4)
+                    {
+                        hand = HandState.kumpe;
+                    }
                 }
 
 
@@ -408,8 +475,27 @@ namespace Jam2024
         {
             _spriteBatch.DrawString(gameplayfont, Convert.ToString((int)time), Vector2.Zero, Color.Black);
             _spriteBatch.Draw(blockbar, healthbar, Color.Red);
-            left_hand.DrawFrame(_spriteBatch,1, new Vector2(0, 600),tool);
-            right_hand.DrawFrame(_spriteBatch, 1, new Vector2(1000, 600), tool);
+            switch (hand)
+            {
+                case HandState.normal:
+                    _spriteBatch.Draw(hand_default,Vector2.Zero,Color.White); break;
+                case HandState.eto:
+                    _spriteBatch.Draw(hand_eto, Vector2.Zero, Color.White); break;
+                case HandState.eto_click:
+                    _spriteBatch.Draw(hand_eto_click, Vector2.Zero, Color.White); break;
+                case HandState.banana:
+                    _spriteBatch.Draw(hand_banana, Vector2.Zero, Color.White); break;
+                case HandState.banana_click:
+                    _spriteBatch.Draw(hand_banana_click, Vector2.Zero, Color.White); break;
+                case HandState.scissor:
+                    _spriteBatch.Draw(hand_scissor, Vector2.Zero, Color.White); break;
+                case HandState.scissor_click:
+                    _spriteBatch.Draw(hand_scissor_click, Vector2.Zero, Color.White); break;
+                case HandState.kumpe:
+                    _spriteBatch.Draw(hand_kumpe, Vector2.Zero, Color.White); break;
+                case HandState.kumpe_click:
+                    _spriteBatch.Draw(hand_kumpe_click, Vector2.Zero, Color.White); break;
+            }
             foreach (ClickBu minicircle in clickcircle)
             {
                 minicircle.Draw(_spriteBatch);

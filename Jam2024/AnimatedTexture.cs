@@ -263,14 +263,9 @@ namespace Jam2024
 
 
 
-        public void changeall(Texture2D asset, int frameCount, int frameRow, int framesPerSec,int startrow)
+        public void change_asset(Texture2D asset)
         {
             myTexture = asset;
-            framecount = frameCount;
-            framerow = frameRow;
-            TimePerFrame = (float)1 / framesPerSec;
-            this.startrow = startrow;
-            //Reset();
         }
     }
 }

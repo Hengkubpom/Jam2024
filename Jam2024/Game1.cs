@@ -17,7 +17,7 @@ namespace Jam2024
         private MouseState ms, oldms;
         private SpriteBatch _spriteBatch;
         private Texture2D circle, play_button, reset_button, tutorial, blockbar;
-        private Texture2D hand_default, hand_banana, hand_eto, hand_scissor, hand_kumpe;
+        private Texture2D hand_default, hand_banana, hand_eto, hand_scissor, hand_kumpe, hand_domain;
         private Texture2D hand_banana_click, hand_eto_click, hand_scissor_click, hand_kumpe_click;
         private SpriteFont overfont, gameplayfont;
         bool opentutorial = false;  //reset
@@ -63,7 +63,8 @@ namespace Jam2024
             scissor,
             scissor_click,
             kumpe,
-            kumpe_click
+            kumpe_click,
+            DomainExpansion
         }
         enum ScreenState
         {
@@ -83,7 +84,6 @@ namespace Jam2024
 
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
             hand = HandState.normal;
             screen = ScreenState.menu; 
             filepath = Path.Combine(@"Content/data/highest.bin");
@@ -106,6 +106,7 @@ namespace Jam2024
             hand_scissor_click = Content.Load<Texture2D>("Hand/hand_scissor_click");
             hand_kumpe = Content.Load<Texture2D>("Hand/hand_scissor");
             hand_kumpe_click = Content.Load<Texture2D>("Hand/hand_scissor_click");
+            hand_domain = Content.Load<Texture2D>("Hand/hand_scissor_click");
             circle = Content.Load<Texture2D>("testtexture");
             play_button = Content.Load<Texture2D>("testtexture");
             reset_button = Content.Load<Texture2D>("testtexture");
@@ -121,7 +122,6 @@ namespace Jam2024
             sEffect.Add(Content.Load<SoundEffect>("Sound/gungai"));     //5
             sEffect.Add(Content.Load<SoundEffect>("Sound/kumpe"));     //6
             SoundEffect.MasterVolume = main_volume_effect;
-            // TODO: use this.Content to load your game content here
         }
 
         protected override void Update(GameTime gameTime)
@@ -155,7 +155,6 @@ namespace Jam2024
                 writer.Close();
             }
 
-            // TODO: Add your update logic here
 
             base.Update(gameTime);
         }
@@ -221,16 +220,18 @@ namespace Jam2024
                     instance.Play();
                     allow_gameopen = false;
                 }
+                hand = HandState.DomainExpansion;
                 timebeforestart -= elapsed;
             }
             else
             {
-                
+                hand = HandState.normal;
                 gameplay_start = true;
             }
 
             if (health <= 0)
             {
+                hand = HandState.normal;
                 gameplay_start = false;
                 if (allow_soundend)
                 {
@@ -495,6 +496,8 @@ namespace Jam2024
                     _spriteBatch.Draw(hand_kumpe, Vector2.Zero, Color.White); break;
                 case HandState.kumpe_click:
                     _spriteBatch.Draw(hand_kumpe_click, Vector2.Zero, Color.White); break;
+                case HandState.DomainExpansion:
+                    _spriteBatch.Draw(hand_domain, Vector2.Zero, Color.White); break;
             }
             foreach (ClickBu minicircle in clickcircle)
             {
@@ -536,6 +539,7 @@ namespace Jam2024
             timebeforeover = 3.5f;
             minute = 0;
             second = 0;   //reset
+            hand = HandState.normal;
     }
     }
 }

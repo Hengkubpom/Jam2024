@@ -76,6 +76,22 @@ namespace Jam2024
             Overload = 2;
             startrow = startRow;
         }
+        public void Load(string asset, int frameCount, int frameRow, int framesPerSec, int startRow, ContentManager Content)
+        {
+            framecount = frameCount;
+            framerow = frameRow;
+            startframe = 0;
+            endframe = (frameCount * framerow) - 1;
+            myTexture = Content.Load<Texture2D>(asset);
+            TimePerFrame = (float)1 / framesPerSec;
+            Frame = 0;
+            frame_r = 0;
+            TotalElapsed = 0;
+            Paused = false;
+            Ended = false;
+            Overload = 2;
+            startrow = startRow;
+        }
         // class AnimatedTexture
         public void UpdateFrame(float elapsed)
         {

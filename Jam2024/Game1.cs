@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -12,27 +13,33 @@ namespace Jam2024
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
+        private AnimatedTexture left_hand = new AnimatedTexture(Vector2.Zero, 0, 1, 0);
+        private AnimatedTexture right_hand = new AnimatedTexture(Vector2.Zero, 0, 1, 0);
         private KeyboardState ks,oldks;
         private MouseState ms, oldms;
         private SpriteBatch _spriteBatch;
-        private Texture2D circle, play_button, reset_button, tutorial;
-        private SpriteFont overfont;
+        private Texture2D circle, play_button, reset_button, tutorial, blockbar;
+        private SpriteFont overfont, gameplayfont;
         bool opentutorial = false;  //reset
         private ScreenState screen;
         private Random rnd = new Random();
-        private bool gameplay_start = true;    //reset
+        private bool gameplay_start = false, allow_gameopen = true, allow_soundend = true;    //reset
         private List<ClickBu> clickcircle = new List<ClickBu>();    //reset
         private float elapsed = 0;   //reset
         private int tool = 0;   //reset
 
-        private Rectangle b_play, b_reset, tutorialbox;
+        private Rectangle b_play, b_reset, tutorialbox, healthbar;
 
+        private float max_health = 100;
         private float health = 100;   //reset
         private float time = 0;   //reset
         private float timeforhealth = 0;   //reset
         private float timestop = 1;   //reset
         private float timeforcircle = 0;   //reset
         private float timecreate = 1;    //reset
+        private float timebeforeend = 2; //reset
+        private float timebeforestart = 4; //reset
+        private float timebeforeover = 3.5f;
         private int minute = 0, second = 0;   //reset
 
         private int highesttime = 0;
@@ -41,6 +48,9 @@ namespace Jam2024
         private FileStream file;
         private BinaryReader reader;
         private BinaryWriter writer;
+
+        static public List<SoundEffect> sEffect = new List<SoundEffect>();
+        private int main_volume_effect = 1;
         enum ScreenState
         {
             menu,
@@ -72,11 +82,19 @@ namespace Jam2024
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            left_hand.Load("testtexture", 1, 1, 1, 1, Content);
+            right_hand.Load("testtexture", 1, 1, 1, 1, Content);
             circle = Content.Load<Texture2D>("testtexture");
             play_button = Content.Load<Texture2D>("testtexture");
             reset_button = Content.Load<Texture2D>("testtexture");
             tutorial = Content.Load<Texture2D>("testtexture");
+            blockbar = Content.Load<Texture2D>("testtexture");
             overfont = Content.Load<SpriteFont>("sfont");
+            gameplayfont = Content.Load<SpriteFont>("gameplayfont");
+            sEffect.Add(Content.Load<SoundEffect>("Sound/OpenGamePlay"));     //0
+            sEffect.Add(Content.Load<SoundEffect>("Sound/hurt"));     //1
+            sEffect.Add(Content.Load<SoundEffect>("Sound/death"));     //2
+            SoundEffect.MasterVolume = main_volume_effect;
             // TODO: use this.Content to load your game content here
         }
 
@@ -154,36 +172,77 @@ namespace Jam2024
                     screen = ScreenState.gameplay;
                 }
             }
-            
+            if(highesttime >= 60)
+            {
+                minute = (int)(highesttime / 60);
+                second = (int)(highesttime % 60);
+            }
+            else
+            {
+                minute = (int)0;
+                second = (int)highesttime;
+            }
         }
 
         protected void update_gameplay(GameTime gameTime)
         {
+            if(timebeforestart > 0)
+            {
+                if (allow_gameopen)
+                {
+                    var instance = sEffect[0].CreateInstance();
+                    instance.Volume = 0.7f;
+                    instance.Play();
+                    allow_gameopen = false;
+                }
+                timebeforestart -= elapsed;
+            }
+            else
+            {
+                
+                gameplay_start = true;
+            }
+
             if (health <= 0)
             {
                 gameplay_start = false;
-                screen = ScreenState.end;
+                if (allow_soundend)
+                {
+                    var instance = sEffect[2].CreateInstance();
+                    instance.Volume = 0.5f;
+                    instance.Play();
+                    allow_soundend = false;
+                }
+                if(timebeforeover > 0)
+                {
+                    timebeforeover -= elapsed;
+                }
+                else
+                {
+                    screen = ScreenState.end;
+                }
             }
-            timeforhealth += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            timeforcircle += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            time += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            timestop = 1-(time / 90);
-            timecreate = 2 - (time / 180);
-            if (timecreate <= 0.7f)
-            {
-                timecreate = 0.7f;
-            }
-            if (timestop <= 0.01f)
-            {
-                timestop = 0.01f;
-            }
-            if(ks.IsKeyDown(Keys.P))
+            if(health > 100)
             {
                 health = 100;
             }
+            
+            healthbar = new Rectangle(20, 5, (int)(400*(health/max_health)), 20);
             if (gameplay_start)
             {
-                //if(timeforhealth >= timestop)
+                timeforhealth += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                timeforcircle += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                time += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                timestop = 1 - (time / 90);
+                timecreate = 2 - (time / 45);
+                if (timecreate <= 0.7f)
+                {
+                    timecreate = 0.7f;
+                }
+                if (timestop <= 0.01f)
+                {
+                    timestop = 0.01f;
+                }
                 if (timeforhealth >= timestop)
                 {
                     health -= 1;
@@ -195,72 +254,98 @@ namespace Jam2024
                     clickcircle.Add(new ClickBu(circle, rnd.Next(1, 5), new Vector2(rnd.Next(50, 1100), rnd.Next(50, 400))));
                     timeforcircle = 0;
                 }
-                
+                //change tool
+                if (ks.IsKeyDown(Keys.D1))
+                {
+                    tool = 1;
+                }
+                else if (ks.IsKeyDown(Keys.D2))
+                {
+                    tool = 2;
+                }
+                else if (ks.IsKeyDown(Keys.D3))
+                {
+                    tool = 3;
+                }
+                else if (ks.IsKeyDown(Keys.D4))
+                {
+                    tool = 4;
+                }
+
+                //sound & animate
+                if(tool == 1)
+                {
+
+                }
+                else if(tool == 2)
+                {
+
+                }
+                else if (tool == 3)
+                {
+
+                }
+                else if (tool == 4)
+                {
+
+                }
+
+
+                foreach (ClickBu minicircle in clickcircle) //button show
+                {
+                    minicircle.Update(elapsed);
+                    if (minicircle.hitbox.Contains(ms.X, ms.Y))
+                    {
+                        if (ms.LeftButton == ButtonState.Pressed && oldms.LeftButton == ButtonState.Released)
+                        {
+                            if (minicircle.OnClick(tool)) //click
+                            {
+                                health += 50;
+                                clickcircle.Remove(minicircle);
+                                break;
+                            }
+                            else
+                            {
+                                var instance = sEffect[1].CreateInstance();
+                                instance.Volume = 0.5f;
+                                instance.Play();
+                                health -= 10;
+                                clickcircle.Remove(minicircle);
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (ms.LeftButton == ButtonState.Pressed && oldms.LeftButton == ButtonState.Released)
+                        {
+                            var instance = sEffect[1].CreateInstance();
+                            instance.Volume = 0.5f;
+                            instance.Play();
+                            health -= 5;
+                        }
+                    }
+                    if (minicircle.timedestory(elapsed))
+                    {
+                        var instance = sEffect[1].CreateInstance();
+                        instance.Volume = 0.5f;
+                        instance.Play();
+                        health -= 10;
+                        clickcircle.Remove(minicircle);
+                        break;
+                    }
+                }
             }
             Console.WriteLine(health);
 
-            //change tool
-            if (ks.IsKeyDown(Keys.D1))
-            {
-                tool = 1;
-            }
-            else if (ks.IsKeyDown(Keys.D2))
-            {
-                tool = 2;
-            }
-            else if (ks.IsKeyDown(Keys.D3))
-            {
-                tool = 3;
-            }
-            else if (ks.IsKeyDown(Keys.D4))
-            {
-                tool = 4;
-            }
-
-
-
-            foreach (ClickBu minicircle in clickcircle) //button show
-            {
-                minicircle.Update(elapsed);
-                if(minicircle.hitbox.Contains(ms.X, ms.Y))
-                {
-                    if (ms.LeftButton == ButtonState.Pressed && oldms.LeftButton == ButtonState.Released)
-                    {
-                        if (minicircle.OnClick(tool)) //click
-                        {
-                            health = 100;
-                            clickcircle.Remove(minicircle);
-                            break;
-                        }
-                        else
-                        {
-                            health -= 20;
-                            clickcircle.Remove(minicircle);
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    if (ms.LeftButton == ButtonState.Pressed && oldms.LeftButton == ButtonState.Released)
-                    {
-                            health -= 20;
-                    }
-                }
-                if (minicircle.timedestory(elapsed))
-                {
-                    health -= 20;
-                    clickcircle.Remove(minicircle);
-                    break;
-                }
-            }
+            
 
 
         }
         protected void update_end(GameTime gameTime)
         {
             b_reset = new Rectangle(500, 500, 100, 70);
-            if(time > highesttime)
+            if (time > highesttime)
             {
                 highesttime = (int)time;
                 file = new FileStream(filepath, FileMode.Create, FileAccess.Write);
@@ -269,15 +354,27 @@ namespace Jam2024
                 writer.Flush();
                 writer.Close();
             }
-            if(time >= 60)
+            if (timebeforeend >= 0)
             {
-                minute = (int)time / 60;
-                second = (int)(time % 60);
+                timebeforeend -= elapsed;
+                minute = rnd.Next(1234, 6543);
+                second = rnd.Next(1234, 6543);
             }
             else
             {
-                second = (int)time;
+                if (time >= 60)
+                {
+                    minute = (int)(time / 60);
+                    second = (int)(time % 60);
+                }
+                else
+                {
+                    minute = (int)0;
+                    second = (int)time;
+                }
             }
+            
+            
 
             if (b_reset.Contains(ms.X, ms.Y) && ms.LeftButton == ButtonState.Pressed && oldms.LeftButton == ButtonState.Released)
             {
@@ -292,7 +389,15 @@ namespace Jam2024
         {
             GraphicsDevice.Clear(Color.Blue);
             _spriteBatch.Draw(play_button, b_play, Color.Red);
-            _spriteBatch.DrawString(overfont, "Highest Time: " + highesttime, new Vector2(400, 700), Color.Red);
+
+            if (minute > 0)
+            {
+                _spriteBatch.DrawString(overfont,"Highest Time: " + minute + " m " + second + " s", new Vector2(500, 500), Color.White);
+            }
+            else
+            {
+                _spriteBatch.DrawString(overfont, "Highest Time: " + second + " s", new Vector2(500, 500), Color.White);
+            }
             if (opentutorial)
             {
                 _spriteBatch.Draw(tutorial, tutorialbox, Color.Lime);
@@ -301,7 +406,11 @@ namespace Jam2024
 
         protected void draw_gameplay(GameTime gameTime)
         {
-            foreach(ClickBu minicircle in clickcircle)
+            _spriteBatch.DrawString(gameplayfont, Convert.ToString((int)time), Vector2.Zero, Color.Black);
+            _spriteBatch.Draw(blockbar, healthbar, Color.Red);
+            left_hand.DrawFrame(_spriteBatch,1, new Vector2(0, 600),tool);
+            right_hand.DrawFrame(_spriteBatch, 1, new Vector2(1000, 600), tool);
+            foreach (ClickBu minicircle in clickcircle)
             {
                 minicircle.Draw(_spriteBatch);
             }
@@ -312,7 +421,7 @@ namespace Jam2024
             _spriteBatch.Draw(reset_button, b_reset, Color.Red);
             if(minute > 0)
             {
-                _spriteBatch.DrawString(overfont, minute+" m"+ second + " s", new Vector2(500, 500), Color.White);
+                _spriteBatch.DrawString(overfont, minute+" m "+ second + " s", new Vector2(500, 500), Color.White);
             }
             else
             {
@@ -324,7 +433,9 @@ namespace Jam2024
         protected void Reset()
         {
             opentutorial = false;  //reset
-            gameplay_start = true;    //reset
+            gameplay_start = false;    //reset
+            allow_gameopen = true;
+            allow_soundend = true;
             clickcircle.Clear(); //reset
             elapsed = 0;   //reset
             tool = 0;   //reset
@@ -334,6 +445,9 @@ namespace Jam2024
             timestop = 1;   //reset
             timeforcircle = 0;   //reset
             timecreate = 1;    //reset
+            timebeforeend = 2;
+            timebeforestart = 4;
+            timebeforeover = 3.5f;
             minute = 0;
             second = 0;   //reset
     }

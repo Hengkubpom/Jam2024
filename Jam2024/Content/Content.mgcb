@@ -13,12 +13,37 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Gameplayfont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Gameplayfont.spritefont
+
 #begin sfont.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
 /build:sfont.spritefont
+
+#begin Sound/death.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sound/death.wav
+
+#begin Sound/hurt.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sound/hurt.wav
+
+#begin Sound/OpenGamePlay.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sound/OpenGamePlay.wav
 
 #begin testtexture.jpg
 /importer:TextureImporter

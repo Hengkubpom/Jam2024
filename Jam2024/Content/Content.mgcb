@@ -417,6 +417,12 @@
 /processorParam:Quality=Best
 /build:Sound/banana.wav
 
+#begin Sound/click.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sound/click.wav
+
 #begin Sound/death.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -458,6 +464,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sound/kumpe.wav
+
+#begin Sound/music/gameplaysong.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sound/music/gameplaysong.mp3
 
 #begin Sound/OpenGamePlay.wav
 /importer:WavImporter
@@ -512,6 +524,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:UI/guideingame.png
+
+#begin UI/highscore_menu.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/highscore_menu.png
 
 #begin UI/icon_banana.png
 /importer:TextureImporter

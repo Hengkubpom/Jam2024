@@ -21,7 +21,7 @@ namespace Jam2024
         private KeyboardState ks,oldks;
         private MouseState ms, oldms;
         private SpriteBatch _spriteBatch;
-        private Texture2D Gameplay_bg, Light, Menu_bg, opacity_, logo, c_highscore, c_endgame, entergame;
+        private Texture2D Gameplay_bg,highscore_menu, Light, Menu_bg, opacity_, logo, c_highscore, c_endgame, entergame;
         private Texture2D play_button, play_circle, reset_button, tutorial, blockbar, guideingame,bar;
         private Texture2D hand_default, hand_banana, hand_eto, hand_scissor, hand_kumpe, hand_glove;
         private Texture2D hand_banana_click, hand_eto_click, hand_scissor_click, hand_kumpe_click;
@@ -68,10 +68,11 @@ namespace Jam2024
         private BinaryReader reader;
         private BinaryWriter writer;
 
-        static public List<SoundEffect> sEffect = new List<SoundEffect>();
-        private int main_volume_effect = 1;
-
         private Song OnMenu, OnGamePlay, OnEnd;
+        static public List<SoundEffect> sEffect = new List<SoundEffect>();
+        private float main_volume_effect = 1;
+        private float main_volume = 0.1f;
+
         ClickState clicktrue = ClickState.none;
         enum ClickState
         {
@@ -132,6 +133,7 @@ namespace Jam2024
             icon.Add(Content.Load<Texture2D>("UI/icon_scissor"));
             icon.Add(Content.Load<Texture2D>("UI/icon_kumpe"));
             entergame = Content.Load<Texture2D>("UI/enter");
+            highscore_menu = Content.Load<Texture2D>("UI/highscore_menu");
             c_highscore = Content.Load<Texture2D>("Background/end_screen/newhighscore_character");
             c_endgame = Content.Load<Texture2D>("Background/end_screen/endgame_character");
             logo = Content.Load<Texture2D>("Background/logo");
@@ -170,14 +172,19 @@ namespace Jam2024
             gameplayfont = Content.Load<SpriteFont>("gameplayfont");
             sEffect.Add(Content.Load<SoundEffect>("Sound/OpenGamePlay"));     //0
             sEffect.Add(Content.Load<SoundEffect>("Sound/hurt"));     //1
-            sEffect.Add(Content.Load<SoundEffect>("Sound/hurt_itai"));     //1
-            sEffect.Add(Content.Load<SoundEffect>("Sound/hurt_jeb"));     //1
-            sEffect.Add(Content.Load<SoundEffect>("Sound/death"));     //2
-            sEffect.Add(Content.Load<SoundEffect>("Sound/eto"));     //3
-            sEffect.Add(Content.Load<SoundEffect>("Sound/banana"));     //4
-            sEffect.Add(Content.Load<SoundEffect>("Sound/gungai"));     //5
-            sEffect.Add(Content.Load<SoundEffect>("Sound/kumpe"));     //6
+            sEffect.Add(Content.Load<SoundEffect>("Sound/hurt_itai"));     //2
+            sEffect.Add(Content.Load<SoundEffect>("Sound/hurt_jeb"));     //3
+            sEffect.Add(Content.Load<SoundEffect>("Sound/death"));     //4
+            sEffect.Add(Content.Load<SoundEffect>("Sound/eto"));     //5
+            sEffect.Add(Content.Load<SoundEffect>("Sound/banana"));     //6
+            sEffect.Add(Content.Load<SoundEffect>("Sound/gungai"));     //7
+            sEffect.Add(Content.Load<SoundEffect>("Sound/kumpe"));     //8
+            sEffect.Add(Content.Load<SoundEffect>("Sound/click"));     //9
+            OnGamePlay = Content.Load<Song>("Sound/music/gameplaysong");
             SoundEffect.MasterVolume = main_volume_effect;
+            MediaPlayer.Play(OnGamePlay);
+            MediaPlayer.Volume = main_volume;
+            MediaPlayer.IsRepeating = true;
         }
 
         protected override void Update(GameTime gameTime)
@@ -190,11 +197,11 @@ namespace Jam2024
             switch (screen)
             {
                 case ScreenState.menu:
-                    update_menu(gameTime); break;
+                    MediaPlayer.Volume = 0.5f; update_menu(gameTime); break;
                 case ScreenState.gameplay:
-                    update_gameplay(gameTime); break;
+                    MediaPlayer.Volume = 0.1f; update_gameplay(gameTime); break;
                 case ScreenState.end:
-                    update_end(gameTime); break;
+                    MediaPlayer.Volume = 0.5f; update_end(gameTime); break;
             }
 
             oldks = ks;
@@ -242,6 +249,9 @@ namespace Jam2024
                 b_play_circle = new Rectangle((int)(b_play.X - ((b_play_circle.Width - b_play.Width) / 2)), (int)(b_play.Y - ((b_play_circle.Height - b_play.Height) / 2)), (int)(275 - scale), (int)(275 - scale));
                 if (b_play.Contains(ms.X, ms.Y) && ms.LeftButton == ButtonState.Pressed && oldms.LeftButton == ButtonState.Released)
                 {
+                    var instance = sEffect[9].CreateInstance();
+                    instance.Volume = 0.5f;
+                    instance.Play();
                     opentutorial = true;
                 }
             }
@@ -255,10 +265,12 @@ namespace Jam2024
                 }
                 if(enter_button.Contains(ms.X, ms.Y) && ms.LeftButton == ButtonState.Pressed && oldms.LeftButton == ButtonState.Released)
                 {
+                    
                     screen = ScreenState.gameplay;
                 }
                 if (ks.IsKeyDown(Keys.Enter) && oldks.IsKeyUp(Keys.Enter))
                 {
+                    
                     screen = ScreenState.gameplay;
                 }
             }
@@ -310,7 +322,7 @@ namespace Jam2024
                 if (allow_soundend)
                 {
                     var instance = sEffect[4].CreateInstance();
-                    instance.Volume = 0.5f;
+                    instance.Volume = 0.8f;
                     instance.Play();
                     allow_soundend = false;
                 }
@@ -536,7 +548,8 @@ namespace Jam2024
             if (!opentutorial)
             {
                 _spriteBatch.Draw(Light, Vector2.Zero, Color.White);
-                _spriteBatch.DrawString(overfont, "Highest Score: " + highesttime, new Vector2(485, 700), Color.White);
+                _spriteBatch.Draw(highscore_menu, new Vector2(410,670), Color.White);
+                _spriteBatch.DrawString(overfont, Convert.ToString(highesttime), new Vector2(740, 705), Color.Black);
             }
             else
             {

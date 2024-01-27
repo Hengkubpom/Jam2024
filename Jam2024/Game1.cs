@@ -18,9 +18,10 @@ namespace Jam2024
         private MouseState ms, oldms;
         private SpriteBatch _spriteBatch;
         private Texture2D Gameplay_bg, Light;
-        private Texture2D circle,circlescale, play_button, reset_button, tutorial, blockbar;
+        private Texture2D circle, play_button, reset_button, tutorial, blockbar;
         private Texture2D hand_default, hand_banana, hand_eto, hand_scissor, hand_kumpe, hand_glove;
         private Texture2D hand_banana_click, hand_eto_click, hand_scissor_click, hand_kumpe_click;
+        private List<Texture2D> circle_effect = new List<Texture2D>();
         private SpriteFont overfont, gameplayfont;
         bool opentutorial = false;  //reset
         private ScreenState screen;
@@ -101,6 +102,10 @@ namespace Jam2024
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            circle_effect.Add(Content.Load<Texture2D>("Circle/circle_effect_eto"));
+            circle_effect.Add(Content.Load<Texture2D>("Circle/circle_effect_banana"));
+            circle_effect.Add(Content.Load<Texture2D>("Circle/circle_effect_scissor"));
+            circle_effect.Add(Content.Load<Texture2D>("Circle/circle_effect_kumpe"));
             Gameplay_bg = Content.Load<Texture2D>("Background/Gameplay_background");
             Light = Content.Load<Texture2D>("Background/Light");
             hand_default = Content.Load<Texture2D>("Hand/hand_default");
@@ -115,7 +120,6 @@ namespace Jam2024
             hand_kumpe_click = Content.Load<Texture2D>("Hand/hand_kumpe_click");
             domainexpansion.Load("Hand/hand_expansion", 4, 1, 8, 1, Content);
             circle = Content.Load<Texture2D>("testtexture");
-            circlescale = Content.Load<Texture2D>("circle");
             play_button = Content.Load<Texture2D>("testtexture");
             reset_button = Content.Load<Texture2D>("testtexture");
             tutorial = Content.Load<Texture2D>("testtexture");
@@ -298,7 +302,7 @@ namespace Jam2024
 
                 if(timeforcircle >= timecreate)
                 {
-                    clickcircle.Add(new ClickBu(circle, circlescale, rnd.Next(1, 5), new Vector2(rnd.Next(50, 1100), rnd.Next(50, 400))));
+                    clickcircle.Add(new ClickBu(circle, circle_effect, rnd.Next(1, 5), new Vector2(rnd.Next(50, 1100), rnd.Next(50, 400))));
                     timeforcircle = 0;
                 }
                 //change tool

@@ -13,14 +13,14 @@ namespace Jam2024
     public class ClickBu
     {
         private AnimatedTexture anim = new AnimatedTexture(Vector2.Zero, 0, 1, 0);
-        private Texture2D circlescale;
+        private List<Texture2D> circlescale;
         private int tool;
         private Vector2 pos;
         private float _timedestroy = 0;
         public Rectangle hitbox;
         private float scale = 0;
 
-        public ClickBu(Texture2D asset,Texture2D circlescale,int tool, Vector2 pos)
+        public ClickBu(Texture2D asset,List<Texture2D> circlescale,int tool, Vector2 pos)
         {
             anim.Load(asset, 1, 1, 1);
             this.tool = tool;
@@ -35,13 +35,13 @@ namespace Jam2024
             {
                 scale = 86;
             }
-            hitbox = new Rectangle ((int)(pos.X-((hitbox.Width-64)/2)), (int)(pos.Y-((hitbox.Height-64)/2)), (int)(150-scale), (int)(150-scale));
+            hitbox = new Rectangle ((int)(pos.X-((hitbox.Width-64)/2)), (int)(pos.Y-((hitbox.Height-64)/2)), (int)(170-scale), (int)(170-scale));
             anim.UpdateFrame(elapsed);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(circlescale, hitbox, Color.White);
+            spriteBatch.Draw(circlescale[tool-1], hitbox, Color.White);
             if(tool == 1)
             {
                 anim.DrawFrame(spriteBatch, 1, pos, Color.Green);

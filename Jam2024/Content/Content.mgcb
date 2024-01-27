@@ -61,6 +61,30 @@
 /processorParam:TextureFormat=Color
 /build:Background/end_screen/endgame_character.PNG
 
+#begin Background/end_screen/endgame_h.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Background/end_screen/endgame_h.png
+
+#begin Background/end_screen/endgame.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Background/end_screen/endgame.png
+
 #begin Background/end_screen/newhighscore_character.PNG
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -205,6 +229,18 @@
 /processorParam:TextureFormat=Color
 /build:Background/patient/patient_scissor.PNG
 
+#begin Background/patient/patient_starter.PNG
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Background/patient/patient_starter.PNG
+
 #begin Background/tutorial.PNG
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -264,6 +300,13 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Circle/circle_effect_scissor.png
+
+#begin endfont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:endfont.spritefont
 
 #begin Gameplayfont.spritefont
 /importer:FontDescriptionImporter
@@ -608,4 +651,28 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:UI/playCircle.png
+
+#begin UI/reset_button.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/reset_button.png
+
+#begin UI/reset_button2.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/reset_button2.png
 

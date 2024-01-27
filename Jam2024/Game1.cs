@@ -22,13 +22,13 @@ namespace Jam2024
         private MouseState ms, oldms;
         private SpriteBatch _spriteBatch;
         private Texture2D Gameplay_bg,highscore_menu, Light, Menu_bg, opacity_, logo, c_highscore, c_endgame, entergame;
-        private Texture2D play_button, play_circle, reset_button, tutorial, blockbar, guideingame,bar;
+        private Texture2D play_button, play_circle, reset_button, reset_button2, tutorial, blockbar, guideingame,bar;
         private Texture2D hand_default, hand_banana, hand_eto, hand_scissor, hand_kumpe, hand_glove;
-        private Texture2D hand_banana_click, hand_eto_click, hand_scissor_click, hand_kumpe_click;
+        private Texture2D hand_banana_click, hand_eto_click, hand_scissor_click, hand_kumpe_click, show_high,show_end;
         private List<Texture2D> circle_effect = new List<Texture2D>();
         private List<Texture2D> icon = new List<Texture2D>();
         private List<Texture2D> patient = new List<Texture2D>();
-        private SpriteFont overfont, gameplayfont;
+        private SpriteFont overfont, gameplayfont, endfont;
         bool opentutorial = false;  //reset
         private ScreenState screen;
         private HandState hand;
@@ -136,6 +136,8 @@ namespace Jam2024
             highscore_menu = Content.Load<Texture2D>("UI/highscore_menu");
             c_highscore = Content.Load<Texture2D>("Background/end_screen/newhighscore_character");
             c_endgame = Content.Load<Texture2D>("Background/end_screen/endgame_character");
+            show_high = Content.Load<Texture2D>("Background/end_screen/endgame_h");
+            show_end = Content.Load<Texture2D>("Background/end_screen/endgame");
             logo = Content.Load<Texture2D>("Background/logo");
             opacity_ = Content.Load<Texture2D>("Background/dark");
             Gameplay_bg = Content.Load<Texture2D>("Background/Gameplay_background");
@@ -158,18 +160,21 @@ namespace Jam2024
             patient.Add(Content.Load<Texture2D>("Background/patient/patient_kumpe"));
             patient.Add(Content.Load<Texture2D>("Background/patient/patient_death"));
             patient.Add(Content.Load<Texture2D>("Background/patient/patient_hurt"));
+            patient.Add(Content.Load<Texture2D>("Background/patient/patient_starter"));
             domainexpansion.Load("Hand/hand_expansion", 4, 1, 8, 1, Content);
             acc_bing.Load("Background/acc/bing", 5, 1, 2, 1, Content);
             acc_meme.Load("Background/acc/meme", 5, 1, 1, 1, Content);
             play_button = Content.Load<Texture2D>("UI/playbutton");
             play_circle = Content.Load<Texture2D>("UI/playCircle");
-            reset_button = Content.Load<Texture2D>("testtexture");
+            reset_button = Content.Load<Texture2D>("UI/reset_button");
+            reset_button2 = Content.Load<Texture2D>("UI/reset_button2");
             tutorial = Content.Load<Texture2D>("Background/tutorial");
             blockbar = Content.Load<Texture2D>("testtexture");
             bar = Content.Load<Texture2D>("UI/bar");
             guideingame = Content.Load<Texture2D>("UI/guideingame");
             overfont = Content.Load<SpriteFont>("sfont");
             gameplayfont = Content.Load<SpriteFont>("gameplayfont");
+            endfont = Content.Load<SpriteFont>("endfont");
             sEffect.Add(Content.Load<SoundEffect>("Sound/OpenGamePlay"));     //0
             sEffect.Add(Content.Load<SoundEffect>("Sound/hurt"));     //1
             sEffect.Add(Content.Load<SoundEffect>("Sound/hurt_itai"));     //2
@@ -217,9 +222,13 @@ namespace Jam2024
                 writer.Flush();
                 writer.Close();
             }
+            if (ks.IsKeyDown(Keys.P))
+            {
+                //IsHighscore = true;
+                screen = ScreenState.end;
+            }
 
-
-            base.Update(gameTime);
+                base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -518,11 +527,11 @@ namespace Jam2024
 
             if (IsHighscore)
             {
-                b_reset = new Rectangle(600, 500, 100, 70);
+                b_reset = new Rectangle(810, 575, 181, 71);
             }
             else
             {
-                b_reset = new Rectangle(300, 500, 100, 70);
+                b_reset = new Rectangle(200, 530, 181, 71);
             }
 
             end_character = new Vector2(0, end_character_value);
@@ -545,6 +554,7 @@ namespace Jam2024
         {
             GraphicsDevice.Clear(Color.Blue);
             _spriteBatch.Draw(Menu_bg, Vector2.Zero, Color.DarkSlateGray);
+            _spriteBatch.Draw(patient[7], Vector2.Zero, Color.White);
             if (!opentutorial)
             {
                 _spriteBatch.Draw(Light, Vector2.Zero, Color.White);
@@ -623,6 +633,7 @@ namespace Jam2024
             else
             {
                 _spriteBatch.Draw(Menu_bg, Vector2.Zero, Color.DarkSlateGray);
+                _spriteBatch.Draw(patient[7], Vector2.Zero, Color.White);
             }
             _spriteBatch.Draw(opacity_, Vector2.Zero, Color.White);
             
@@ -679,15 +690,31 @@ namespace Jam2024
             GraphicsDevice.Clear(Color.Black);
             if (IsHighscore)
             {
+                _spriteBatch.Draw(show_high, Vector2.Zero, Color.White);
                 _spriteBatch.Draw(c_highscore, end_character, Color.White);
-                _spriteBatch.Draw(reset_button, b_reset, Color.Red);
-                _spriteBatch.DrawString(overfont, Convert.ToString(score), new Vector2(700, 500), Color.White);
+                if (b_reset.Contains(ms.X, ms.Y))
+                {
+                    _spriteBatch.Draw(reset_button2, b_reset, Color.Gray);
+                }
+                else
+                {
+                    _spriteBatch.Draw(reset_button2, b_reset, Color.White);
+                }
+                _spriteBatch.DrawString(endfont, Convert.ToString(score), new Vector2(850, 460), Color.Black);
             }
             else
             {
+                _spriteBatch.Draw(show_end, Vector2.Zero, Color.White);
                 _spriteBatch.Draw(c_endgame, end_character, Color.White);
-                _spriteBatch.Draw(reset_button, b_reset, Color.Red);
-                _spriteBatch.DrawString(overfont, Convert.ToString(score), new Vector2(700, 500), Color.White);
+                if (b_reset.Contains(ms.X, ms.Y))
+                {
+                    _spriteBatch.Draw(reset_button, b_reset, Color.Gray);
+                }
+                else
+                {
+                    _spriteBatch.Draw(reset_button, b_reset, Color.White);
+                }
+                _spriteBatch.DrawString(endfont, Convert.ToString(score), new Vector2(300, 400), Color.Black);
             }
             
             

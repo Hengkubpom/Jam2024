@@ -13,22 +13,26 @@ namespace Jam2024
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
+        private AnimatedTexture domainexpansion = new AnimatedTexture(Vector2.Zero, 0, 1, 0);
         private KeyboardState ks,oldks;
         private MouseState ms, oldms;
         private SpriteBatch _spriteBatch;
-        private Texture2D circle, play_button, reset_button, tutorial, blockbar;
-        private Texture2D hand_default, hand_banana, hand_eto, hand_scissor, hand_kumpe, hand_domain;
+        private Texture2D Gameplay_bg, Light;
+        private Texture2D circle,circlescale, play_button, reset_button, tutorial, blockbar;
+        private Texture2D hand_default, hand_banana, hand_eto, hand_scissor, hand_kumpe, hand_glove;
         private Texture2D hand_banana_click, hand_eto_click, hand_scissor_click, hand_kumpe_click;
         private SpriteFont overfont, gameplayfont;
         bool opentutorial = false;  //reset
         private ScreenState screen;
         private HandState hand;
         private Random rnd = new Random();
+        private bool lighton = false; //reset
         private bool gameplay_start = false, allow_gameopen = true, allow_soundend = true;    //reset
         private List<ClickBu> clickcircle = new List<ClickBu>();    //reset
         private float elapsed = 0;   //reset
         private int tool = 0;   //reset
 
+        private Vector2 hand_position = new Vector2(700,330);
         private Rectangle b_play, b_reset, tutorialbox, healthbar;
 
         private float max_health = 100;
@@ -39,7 +43,7 @@ namespace Jam2024
         private float timeforcircle = 0;   //reset
         private float timecreate = 1;    //reset
         private float timebeforeend = 2; //reset
-        private float timebeforestart = 4; //reset
+        private float timebeforestart = 5; //reset
         private float timebeforeover = 3.5f;
         private int minute = 0, second = 0;   //reset
 
@@ -97,17 +101,21 @@ namespace Jam2024
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            Gameplay_bg = Content.Load<Texture2D>("Background/Gameplay_background");
+            Light = Content.Load<Texture2D>("Background/Light");
             hand_default = Content.Load<Texture2D>("Hand/hand_default");
+            hand_glove = Content.Load<Texture2D>("Hand/hand_glove");
             hand_banana = Content.Load<Texture2D>("Hand/hand_banana");
             hand_banana_click = Content.Load<Texture2D>("Hand/hand_banana_click");
             hand_eto = Content.Load<Texture2D>("Hand/hand_eto");
             hand_eto_click = Content.Load<Texture2D>("Hand/hand_eto_click");
             hand_scissor = Content.Load<Texture2D>("Hand/hand_scissor");
             hand_scissor_click = Content.Load<Texture2D>("Hand/hand_scissor_click");
-            hand_kumpe = Content.Load<Texture2D>("Hand/hand_scissor");
-            hand_kumpe_click = Content.Load<Texture2D>("Hand/hand_scissor_click");
-            hand_domain = Content.Load<Texture2D>("Hand/hand_scissor_click");
+            hand_kumpe = Content.Load<Texture2D>("Hand/hand_kumpe");
+            hand_kumpe_click = Content.Load<Texture2D>("Hand/hand_kumpe_click");
+            domainexpansion.Load("Hand/hand_expansion", 4, 1, 8, 1, Content);
             circle = Content.Load<Texture2D>("testtexture");
+            circlescale = Content.Load<Texture2D>("circle");
             play_button = Content.Load<Texture2D>("testtexture");
             reset_button = Content.Load<Texture2D>("testtexture");
             tutorial = Content.Load<Texture2D>("testtexture");
@@ -221,11 +229,23 @@ namespace Jam2024
                     allow_gameopen = false;
                 }
                 hand = HandState.DomainExpansion;
+                if(hand == HandState.DomainExpansion)
+                {
+                    hand_position.X -= 1;
+                    if(hand_position.X <= 530)
+                    {
+                        hand_position.X = 530;
+                        domainexpansion.UpdateFrame(elapsed);
+                    }
+                }
                 timebeforestart -= elapsed;
             }
             else
             {
-                hand = HandState.normal;
+                if(hand == HandState.DomainExpansion)
+                {
+                    hand = HandState.normal;
+                }
                 gameplay_start = true;
             }
 
@@ -278,7 +298,7 @@ namespace Jam2024
 
                 if(timeforcircle >= timecreate)
                 {
-                    clickcircle.Add(new ClickBu(circle, rnd.Next(1, 5), new Vector2(rnd.Next(50, 1100), rnd.Next(50, 400))));
+                    clickcircle.Add(new ClickBu(circle, circlescale, rnd.Next(1, 5), new Vector2(rnd.Next(50, 1100), rnd.Next(50, 400))));
                     timeforcircle = 0;
                 }
                 //change tool
@@ -456,6 +476,7 @@ namespace Jam2024
         protected void draw_menu(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Blue);
+            _spriteBatch.Draw(hand_glove, new Vector2(0,5), Color.White);
             _spriteBatch.Draw(play_button, b_play, Color.Red);
 
             if (minute > 0)
@@ -474,6 +495,16 @@ namespace Jam2024
 
         protected void draw_gameplay(GameTime gameTime)
         {
+            
+            if (lighton)
+            {
+                _spriteBatch.Draw(Gameplay_bg, Vector2.Zero, Color.White);
+                _spriteBatch.Draw(Light, Vector2.Zero, Color.White);
+            }
+            else
+            {
+                _spriteBatch.Draw(Gameplay_bg, Vector2.Zero, Color.DarkSlateGray);
+            }
             _spriteBatch.DrawString(gameplayfont, Convert.ToString((int)time), Vector2.Zero, Color.Black);
             _spriteBatch.Draw(blockbar, healthbar, Color.Red);
             switch (hand)
@@ -497,7 +528,16 @@ namespace Jam2024
                 case HandState.kumpe_click:
                     _spriteBatch.Draw(hand_kumpe_click, Vector2.Zero, Color.White); break;
                 case HandState.DomainExpansion:
-                    _spriteBatch.Draw(hand_domain, Vector2.Zero, Color.White); break;
+                    if (domainexpansion.IsEnd)
+                    {
+                        domainexpansion.DrawFrame(_spriteBatch, 3, hand_position);
+                        lighton = true;
+                    }
+                    else
+                    {
+                        domainexpansion.DrawFrame(_spriteBatch, hand_position);
+                    }
+                    break;
             }
             foreach (ClickBu minicircle in clickcircle)
             {
@@ -525,6 +565,7 @@ namespace Jam2024
             gameplay_start = false;    //reset
             allow_gameopen = true;
             allow_soundend = true;
+            lighton = false;
             clickcircle.Clear(); //reset
             elapsed = 0;   //reset
             tool = 0;   //reset
@@ -535,11 +576,13 @@ namespace Jam2024
             timeforcircle = 0;   //reset
             timecreate = 1;    //reset
             timebeforeend = 2;
-            timebeforestart = 4;
+            timebeforestart = 5;
             timebeforeover = 3.5f;
             minute = 0;
             second = 0;   //reset
             hand = HandState.normal;
-    }
+            domainexpansion.Reset();
+            hand_position = new Vector2(700, 330);
+        }
     }
 }

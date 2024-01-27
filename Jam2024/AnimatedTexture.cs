@@ -238,11 +238,12 @@ namespace Jam2024
         {
             Frame = 0;
             TotalElapsed = 0f;
+            Paused = false;
+            Ended = false;
         }
         public void Stop()
         {
             Pause();
-            Reset();
         }
         public void Play()
         {

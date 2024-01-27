@@ -12,17 +12,16 @@ namespace Jam2024
     
     public class ClickBu
     {
-        private AnimatedTexture anim = new AnimatedTexture(Vector2.Zero, 0, 1, 0);
-        private List<Texture2D> circlescale;
+        private List<Texture2D> circlescale,asset;
         private int tool;
         private Vector2 pos;
         private float _timedestroy = 0;
-        public Rectangle hitbox;
+        public Rectangle hitbox,posbox;
         private float scale = 0;
 
-        public ClickBu(Texture2D asset,List<Texture2D> circlescale,int tool, Vector2 pos)
+        public ClickBu(List<Texture2D> asset,List<Texture2D> circlescale,int tool, Vector2 pos)
         {
-            anim.Load(asset, 1, 1, 1);
+            this.asset = asset;
             this.tool = tool;
             this.pos = pos;
             this.circlescale = circlescale;
@@ -35,29 +34,15 @@ namespace Jam2024
             {
                 scale = 86;
             }
-            hitbox = new Rectangle ((int)(pos.X-((hitbox.Width-64)/2)), (int)(pos.Y-((hitbox.Height-64)/2)), (int)(170-scale), (int)(170-scale));
-            anim.UpdateFrame(elapsed);
+            posbox = new Rectangle((int)pos.X, (int)pos.Y, 80, 80);
+            hitbox = new Rectangle ((int)(pos.X-((hitbox.Width-80)/2)), (int)(pos.Y-((hitbox.Height-80)/2)), (int)(170-scale), (int)(170-scale));
+            
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(circlescale[tool-1], hitbox, Color.White);
-            if(tool == 1)
-            {
-                anim.DrawFrame(spriteBatch, 1, pos, Color.Green);
-            }
-            if (tool == 2)
-            {
-                anim.DrawFrame(spriteBatch, 1, pos, Color.Red);
-            }
-            if (tool == 3)
-            {
-                anim.DrawFrame(spriteBatch, 1, pos, Color.Blue);
-            }
-            if (tool == 4)
-            {
-                anim.DrawFrame(spriteBatch, 1, pos, Color.Pink);
-            }
+            spriteBatch.Draw(asset[tool-1], posbox, Color.White);
         }
         public bool OnClick(int playertool)
         {

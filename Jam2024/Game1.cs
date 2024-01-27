@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -13,15 +14,19 @@ namespace Jam2024
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
+        private AnimatedTexture acc_bing = new AnimatedTexture(Vector2.Zero, 0, 1, 0);
+        private AnimatedTexture acc_meme = new AnimatedTexture(Vector2.Zero, 0, 1, 0);
         private AnimatedTexture domainexpansion = new AnimatedTexture(Vector2.Zero, 0, 1, 0);
         private KeyboardState ks,oldks;
         private MouseState ms, oldms;
         private SpriteBatch _spriteBatch;
-        private Texture2D Gameplay_bg, Light;
-        private Texture2D circle, play_button, reset_button, tutorial, blockbar;
+        private Texture2D Gameplay_bg, Light, Menu_bg, opacity_;
+        private Texture2D play_button, reset_button, tutorial, blockbar, guideingame,bar;
         private Texture2D hand_default, hand_banana, hand_eto, hand_scissor, hand_kumpe, hand_glove;
         private Texture2D hand_banana_click, hand_eto_click, hand_scissor_click, hand_kumpe_click;
         private List<Texture2D> circle_effect = new List<Texture2D>();
+        private List<Texture2D> icon = new List<Texture2D>();
+        private List<Texture2D> patient = new List<Texture2D>();
         private SpriteFont overfont, gameplayfont;
         bool opentutorial = false;  //reset
         private ScreenState screen;
@@ -34,7 +39,7 @@ namespace Jam2024
         private int tool = 0;   //reset
 
         private Vector2 hand_position = new Vector2(700,330);
-        private Rectangle b_play, b_reset, tutorialbox, healthbar;
+        private Rectangle b_play, b_reset, tutorialbox, healthbar, removehealthbar;
 
         private float max_health = 100;
         private float health = 100;   //reset
@@ -46,9 +51,9 @@ namespace Jam2024
         private float timebeforeend = 2; //reset
         private float timebeforestart = 5; //reset
         private float timebeforeover = 3.5f;
-        private int minute = 0, second = 0;   //reset
 
         private int highesttime = 0;
+        private int score = 0;
 
         private string filepath;
         private FileStream file;
@@ -58,6 +63,14 @@ namespace Jam2024
         static public List<SoundEffect> sEffect = new List<SoundEffect>();
         private int main_volume_effect = 1;
 
+        private Song OnMenu, OnGamePlay, OnEnd;
+        ClickState clicktrue = ClickState.none;
+        enum ClickState
+        {
+            yes,
+            no,
+            none
+        }
         enum HandState
         {
             normal,
@@ -106,7 +119,13 @@ namespace Jam2024
             circle_effect.Add(Content.Load<Texture2D>("Circle/circle_effect_banana"));
             circle_effect.Add(Content.Load<Texture2D>("Circle/circle_effect_scissor"));
             circle_effect.Add(Content.Load<Texture2D>("Circle/circle_effect_kumpe"));
+            icon.Add(Content.Load<Texture2D>("UI/icon_eto"));
+            icon.Add(Content.Load<Texture2D>("UI/icon_banana"));
+            icon.Add(Content.Load<Texture2D>("UI/icon_scissor"));
+            icon.Add(Content.Load<Texture2D>("UI/icon_kumpe"));
+            opacity_ = Content.Load<Texture2D>("Background/dark");
             Gameplay_bg = Content.Load<Texture2D>("Background/Gameplay_background");
+            Menu_bg = Content.Load<Texture2D>("Background/Menu_background");
             Light = Content.Load<Texture2D>("Background/Light");
             hand_default = Content.Load<Texture2D>("Hand/hand_default");
             hand_glove = Content.Load<Texture2D>("Hand/hand_glove");
@@ -118,16 +137,28 @@ namespace Jam2024
             hand_scissor_click = Content.Load<Texture2D>("Hand/hand_scissor_click");
             hand_kumpe = Content.Load<Texture2D>("Hand/hand_kumpe");
             hand_kumpe_click = Content.Load<Texture2D>("Hand/hand_kumpe_click");
+            patient.Add(Content.Load<Texture2D>("Background/patient/patient_normal"));
+            patient.Add(Content.Load<Texture2D>("Background/patient/patient_eto"));
+            patient.Add(Content.Load<Texture2D>("Background/patient/patient_banana"));
+            patient.Add(Content.Load<Texture2D>("Background/patient/patient_scissor"));
+            patient.Add(Content.Load<Texture2D>("Background/patient/patient_kumpe"));
+            patient.Add(Content.Load<Texture2D>("Background/patient/patient_death"));
+            patient.Add(Content.Load<Texture2D>("Background/patient/patient_hurt"));
             domainexpansion.Load("Hand/hand_expansion", 4, 1, 8, 1, Content);
-            circle = Content.Load<Texture2D>("testtexture");
+            acc_bing.Load("Background/acc/bing", 5, 1, 2, 1, Content);
+            acc_meme.Load("Background/acc/meme", 5, 1, 1, 1, Content);
             play_button = Content.Load<Texture2D>("testtexture");
             reset_button = Content.Load<Texture2D>("testtexture");
             tutorial = Content.Load<Texture2D>("testtexture");
             blockbar = Content.Load<Texture2D>("testtexture");
+            bar = Content.Load<Texture2D>("UI/bar");
+            guideingame = Content.Load<Texture2D>("UI/guideingame");
             overfont = Content.Load<SpriteFont>("sfont");
             gameplayfont = Content.Load<SpriteFont>("gameplayfont");
             sEffect.Add(Content.Load<SoundEffect>("Sound/OpenGamePlay"));     //0
             sEffect.Add(Content.Load<SoundEffect>("Sound/hurt"));     //1
+            sEffect.Add(Content.Load<SoundEffect>("Sound/hurt_itai"));     //1
+            sEffect.Add(Content.Load<SoundEffect>("Sound/hurt_jeb"));     //1
             sEffect.Add(Content.Load<SoundEffect>("Sound/death"));     //2
             sEffect.Add(Content.Load<SoundEffect>("Sound/eto"));     //3
             sEffect.Add(Content.Load<SoundEffect>("Sound/banana"));     //4
@@ -209,16 +240,6 @@ namespace Jam2024
                     screen = ScreenState.gameplay;
                 }
             }
-            if(highesttime >= 60)
-            {
-                minute = (int)(highesttime / 60);
-                second = (int)(highesttime % 60);
-            }
-            else
-            {
-                minute = (int)0;
-                second = (int)highesttime;
-            }
         }
 
         protected void update_gameplay(GameTime gameTime)
@@ -259,7 +280,7 @@ namespace Jam2024
                 gameplay_start = false;
                 if (allow_soundend)
                 {
-                    var instance = sEffect[2].CreateInstance();
+                    var instance = sEffect[4].CreateInstance();
                     instance.Volume = 0.5f;
                     instance.Play();
                     allow_soundend = false;
@@ -278,7 +299,8 @@ namespace Jam2024
                 health = 100;
             }
             
-            healthbar = new Rectangle(20, 5, (int)(400*(health/max_health)), 20);
+            healthbar = new Rectangle(289, 14, (int)(356*(health/max_health)), 21);
+            removehealthbar = new Rectangle(289+healthbar.Width, 14, 356-healthbar.Width, 21);
             if (gameplay_start)
             {
                 timeforhealth += (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -286,6 +308,8 @@ namespace Jam2024
                 time += (float)gameTime.ElapsedGameTime.TotalSeconds;
                 timestop = 1 - (time / 90);
                 timecreate = 2 - (time / 45);
+                acc_bing.UpdateFrame(elapsed);
+                acc_meme.UpdateFrame(elapsed);
                 if (timecreate <= 0.7f)
                 {
                     timecreate = 0.7f;
@@ -302,7 +326,7 @@ namespace Jam2024
 
                 if(timeforcircle >= timecreate)
                 {
-                    clickcircle.Add(new ClickBu(circle, circle_effect, rnd.Next(1, 5), new Vector2(rnd.Next(50, 1100), rnd.Next(50, 400))));
+                    clickcircle.Add(new ClickBu(icon, circle_effect, rnd.Next(1, 5), new Vector2(rnd.Next(50, 1100), rnd.Next(50, 400))));
                     timeforcircle = 0;
                 }
                 //change tool
@@ -326,41 +350,10 @@ namespace Jam2024
 
                 }
 
-                //sound & animate onclick
-                if (ms.LeftButton == ButtonState.Pressed && oldms.LeftButton == ButtonState.Released)
+                if (ms.LeftButton == ButtonState.Released)
                 {
-                    if (tool == 1)
-                    {
-                        var instance = sEffect[3].CreateInstance();
-                        instance.Volume = 0.5f;
-                        instance.Play();
-                        hand = HandState.eto_click;
-                    }
-                    else if (tool == 2)
-                    {
-                        var instance = sEffect[4].CreateInstance();
-                        instance.Volume = 0.5f;
-                        instance.Play();
-                        hand = HandState.banana_click;
-                    }
-                    else if (tool == 3)
-                    {
-                        var instance = sEffect[5].CreateInstance();
-                        instance.Volume = 1f;
-                        instance.Play();
-                        hand = HandState.scissor_click;
-                    }
-                    else if (tool == 4)
-                    {
-                        var instance = sEffect[6].CreateInstance();
-                        instance.Volume = 0.5f;
-                        instance.Play();
-                        hand = HandState.kumpe_click;
-                    }
-                }
-                else if(ms.LeftButton == ButtonState.Released)
-                {
-                    if(tool == 0)
+                    clicktrue = ClickState.none;
+                    if (tool == 0)
                     {
                         hand = HandState.normal;
                     }
@@ -381,24 +374,57 @@ namespace Jam2024
                         hand = HandState.kumpe;
                     }
                 }
-
-
                 foreach (ClickBu minicircle in clickcircle) //button show
                 {
+                    
                     minicircle.Update(elapsed);
                     if (minicircle.hitbox.Contains(ms.X, ms.Y))
                     {
                         if (ms.LeftButton == ButtonState.Pressed && oldms.LeftButton == ButtonState.Released)
                         {
+                            
+                            //sound & animate onclick
+                            if (tool == 1)
+                            {
+                                var instance = sEffect[5].CreateInstance();
+                                instance.Volume = 0.5f;
+                                instance.Play();
+                                hand = HandState.eto_click;
+                            }
+                            else if (tool == 2)
+                            {
+                                    var instance = sEffect[6].CreateInstance();
+                                    instance.Volume = 0.5f;
+                                    instance.Play();
+                                    hand = HandState.banana_click;
+                            }
+                            else if (tool == 3)
+                            {
+                                var instance = sEffect[7].CreateInstance();
+                                instance.Volume = 1f;
+                                instance.Play();
+                                hand = HandState.scissor_click;
+                            }
+                            else if (tool == 4)
+                            {
+                                var instance = sEffect[8].CreateInstance();
+                                instance.Volume = 0.5f;
+                                instance.Play();
+                                hand = HandState.kumpe_click;
+                            }
+                            
+
                             if (minicircle.OnClick(tool)) //click
                             {
                                 health += 50;
                                 clickcircle.Remove(minicircle);
+                                clicktrue = ClickState.yes;
                                 break;
                             }
                             else
                             {
-                                var instance = sEffect[1].CreateInstance();
+                                clicktrue = ClickState.no;
+                                var instance = sEffect[rnd.Next(1, 4)].CreateInstance();
                                 instance.Volume = 0.5f;
                                 instance.Play();
                                 health -= 10;
@@ -407,19 +433,11 @@ namespace Jam2024
                             }
                         }
                     }
-                    else
-                    {
-                        if (ms.LeftButton == ButtonState.Pressed && oldms.LeftButton == ButtonState.Released)
-                        {
-                            var instance = sEffect[1].CreateInstance();
-                            instance.Volume = 0.5f;
-                            instance.Play();
-                            health -= 5;
-                        }
-                    }
+                    
                     if (minicircle.timedestory(elapsed))
                     {
-                        var instance = sEffect[1].CreateInstance();
+                        clicktrue = ClickState.no;
+                        var instance = sEffect[rnd.Next(1, 4)].CreateInstance();
                         instance.Volume = 0.5f;
                         instance.Play();
                         health -= 10;
@@ -428,7 +446,7 @@ namespace Jam2024
                     }
                 }
             }
-            Console.WriteLine(health);
+            Console.WriteLine(clicktrue);
 
             
 
@@ -449,21 +467,12 @@ namespace Jam2024
             if (timebeforeend >= 0)
             {
                 timebeforeend -= elapsed;
-                minute = rnd.Next(1234, 6543);
-                second = rnd.Next(1234, 6543);
+
+                score = rnd.Next(1234, 9876);
             }
             else
             {
-                if (time >= 60)
-                {
-                    minute = (int)(time / 60);
-                    second = (int)(time % 60);
-                }
-                else
-                {
-                    minute = (int)0;
-                    second = (int)time;
-                }
+                score = (int)time;
             }
             
             
@@ -480,17 +489,21 @@ namespace Jam2024
         protected void draw_menu(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Blue);
-            _spriteBatch.Draw(hand_glove, new Vector2(0,5), Color.White);
-            _spriteBatch.Draw(play_button, b_play, Color.Red);
-
-            if (minute > 0)
+            _spriteBatch.Draw(Menu_bg, Vector2.Zero, Color.DarkSlateGray);
+            if (!opentutorial)
             {
-                _spriteBatch.DrawString(overfont,"Highest Time: " + minute + " m " + second + " s", new Vector2(500, 500), Color.White);
+                _spriteBatch.Draw(Light, Vector2.Zero, Color.White);
             }
             else
             {
-                _spriteBatch.DrawString(overfont, "Highest Time: " + second + " s", new Vector2(500, 500), Color.White);
+                _spriteBatch.Draw(opacity_, Vector2.Zero, Color.White);
             }
+            _spriteBatch.Draw(hand_glove, new Vector2(0,5), Color.White);
+            _spriteBatch.Draw(play_button, b_play, Color.Red);
+
+            
+            _spriteBatch.DrawString(overfont,"Highest Score: " + highesttime, new Vector2(500, 500), Color.White);
+            
             if (opentutorial)
             {
                 _spriteBatch.Draw(tutorial, tutorialbox, Color.Lime);
@@ -503,14 +516,38 @@ namespace Jam2024
             if (lighton)
             {
                 _spriteBatch.Draw(Gameplay_bg, Vector2.Zero, Color.White);
+                acc_bing.DrawFrame(_spriteBatch, new Vector2(342, 27));
+                acc_meme.DrawFrame(_spriteBatch, new Vector2(350,179));
                 _spriteBatch.Draw(Light, Vector2.Zero, Color.White);
+
+                if (ms.LeftButton == ButtonState.Pressed && health > 0 && clicktrue == ClickState.yes)
+                {
+                    _spriteBatch.Draw(patient[tool], Vector2.Zero, Color.White);
+                }
+                else if(ms.LeftButton == ButtonState.Pressed && health > 0 && clicktrue == ClickState.no)
+                {
+                    _spriteBatch.Draw(patient[6], Vector2.Zero, Color.White);
+                }
+                else
+                {
+                    _spriteBatch.Draw(patient[0], Vector2.Zero, Color.White);
+                }
+                if(health <= 0)
+                {
+                    _spriteBatch.Draw(patient[5], Vector2.Zero, Color.White);
+                }
             }
             else
             {
-                _spriteBatch.Draw(Gameplay_bg, Vector2.Zero, Color.DarkSlateGray);
+                _spriteBatch.Draw(Menu_bg, Vector2.Zero, Color.DarkSlateGray);
             }
-            _spriteBatch.DrawString(gameplayfont, Convert.ToString((int)time), Vector2.Zero, Color.Black);
             _spriteBatch.Draw(blockbar, healthbar, Color.Red);
+            _spriteBatch.Draw(blockbar, removehealthbar, Color.White);
+            _spriteBatch.Draw(bar, Vector2.Zero, Color.White);
+            _spriteBatch.Draw(opacity_, Vector2.Zero, Color.White);
+            _spriteBatch.DrawString(gameplayfont, Convert.ToString((int)time), new Vector2(110,20), Color.White);
+            
+
             switch (hand)
             {
                 case HandState.normal:
@@ -543,6 +580,11 @@ namespace Jam2024
                     }
                     break;
             }
+
+            if (lighton)
+            {
+                _spriteBatch.Draw(guideingame, new Vector2(455, 650), Color.White);
+            }
             foreach (ClickBu minicircle in clickcircle)
             {
                 minicircle.Draw(_spriteBatch);
@@ -552,14 +594,8 @@ namespace Jam2024
         {
             GraphicsDevice.Clear(Color.Black);
             _spriteBatch.Draw(reset_button, b_reset, Color.Red);
-            if(minute > 0)
-            {
-                _spriteBatch.DrawString(overfont, minute+" m "+ second + " s", new Vector2(500, 500), Color.White);
-            }
-            else
-            {
-                _spriteBatch.DrawString(overfont, second + " s", new Vector2(500, 500), Color.White);
-            }
+            _spriteBatch.DrawString(overfont, "Score: "+score, new Vector2(500, 500), Color.White);
+            
             
         }
 
@@ -582,11 +618,11 @@ namespace Jam2024
             timebeforeend = 2;
             timebeforestart = 5;
             timebeforeover = 3.5f;
-            minute = 0;
-            second = 0;   //reset
+            score = 0;
             hand = HandState.normal;
             domainexpansion.Reset();
             hand_position = new Vector2(700, 330);
+            clicktrue = ClickState.none;
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Jam2024
         private SpriteBatch _spriteBatch;
         private Texture2D Gameplay_bg,highscore_menu, Light, Menu_bg, opacity_, logo, c_highscore, c_endgame, entergame;
         private Texture2D play_button, play_circle, reset_button, reset_button2, tutorial, blockbar, guideingame,bar;
-        private Texture2D hand_default, hand_banana, hand_eto, hand_scissor, hand_kumpe, hand_glove;
+        private Texture2D hand_default, hand_banana, hand_eto, hand_scissor, hand_kumpe, hand_glove, cursor_glove, cursor;
         private Texture2D hand_banana_click, hand_eto_click, hand_scissor_click, hand_kumpe_click, show_high,show_end;
         private List<Texture2D> circle_effect = new List<Texture2D>();
         private List<Texture2D> icon = new List<Texture2D>();
@@ -34,7 +34,7 @@ namespace Jam2024
         private HandState hand;
         private Random rnd = new Random();
         private bool lighton = false; //reset
-        private bool gameplay_start = false, allow_gameopen = true, allow_soundend = true;    //reset
+        private bool gameplay_start = false, allow_gameopen = true, allow_soundend = true, allow_effectend = true;    //reset
         private List<ClickBu> clickcircle = new List<ClickBu>();    //reset
         private float elapsed = 0;   //reset
         private float scale = 0, scalespeed = 1;
@@ -104,7 +104,7 @@ namespace Jam2024
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            IsMouseVisible = true;
+            IsMouseVisible = false;
             _graphics.PreferredBackBufferWidth = 1200;
             _graphics.PreferredBackBufferHeight = 800;
         }
@@ -134,6 +134,8 @@ namespace Jam2024
             icon.Add(Content.Load<Texture2D>("UI/icon_kumpe"));
             entergame = Content.Load<Texture2D>("UI/enter");
             highscore_menu = Content.Load<Texture2D>("UI/highscore_menu");
+            cursor = Content.Load<Texture2D>("UI/cursor/cursor");
+            cursor_glove = Content.Load<Texture2D>("UI/cursor/cursor_glove");
             c_highscore = Content.Load<Texture2D>("Background/end_screen/newhighscore_character");
             c_endgame = Content.Load<Texture2D>("Background/end_screen/endgame_character");
             show_high = Content.Load<Texture2D>("Background/end_screen/endgame_h");
@@ -185,6 +187,8 @@ namespace Jam2024
             sEffect.Add(Content.Load<SoundEffect>("Sound/gungai"));     //7
             sEffect.Add(Content.Load<SoundEffect>("Sound/kumpe"));     //8
             sEffect.Add(Content.Load<SoundEffect>("Sound/click"));     //9
+            sEffect.Add(Content.Load<SoundEffect>("Sound/endgame_sound"));     //10
+            sEffect.Add(Content.Load<SoundEffect>("Sound/highscore_sound"));     //11
             OnGamePlay = Content.Load<Song>("Sound/music/gameplaysong");
             SoundEffect.MasterVolume = main_volume_effect;
             MediaPlayer.Play(OnGamePlay);
@@ -224,7 +228,7 @@ namespace Jam2024
             }
             if (ks.IsKeyDown(Keys.P))
             {
-                //IsHighscore = true;
+                IsHighscore = true;
                 screen = ScreenState.end;
             }
 
@@ -243,6 +247,14 @@ namespace Jam2024
                     draw_gameplay(gameTime); break;
                 case ScreenState.end:
                     draw_end(gameTime); break;
+            }
+            if (gameplay_start)
+            {
+                _spriteBatch.Draw(cursor, new Rectangle((int)ms.X,(int)ms.Y,64,64), Color.White);
+            }
+            else
+            {
+                _spriteBatch.Draw(cursor_glove, new Rectangle((int)ms.X, (int)ms.Y, 64, 64), Color.White);
             }
             _spriteBatch.End();
 
@@ -376,7 +388,7 @@ namespace Jam2024
 
                 if(timeforcircle >= timecreate)
                 {
-                    clickcircle.Add(new ClickBu(icon, circle_effect, rnd.Next(1, 5), new Vector2(rnd.Next(50, 1100), rnd.Next(50, 400))));
+                    clickcircle.Add(new ClickBu(icon, circle_effect, rnd.Next(1, 5), new Vector2(rnd.Next(50, 1100), rnd.Next(250, 500))));
                     timeforcircle = 0;
                 }
                 //change tool
@@ -514,6 +526,7 @@ namespace Jam2024
                 writer.Flush();
                 writer.Close();
             }
+
             if (timebeforeend >= 0)
             {
                 timebeforeend -= elapsed;
@@ -528,10 +541,24 @@ namespace Jam2024
             if (IsHighscore)
             {
                 b_reset = new Rectangle(810, 575, 181, 71);
+                if (allow_effectend)
+                {
+                    var instance = sEffect[11].CreateInstance();
+                    instance.Volume = 0.3f;
+                    instance.Play();
+                    allow_effectend = false;
+                }
             }
             else
             {
                 b_reset = new Rectangle(200, 530, 181, 71);
+                if (allow_effectend)
+                {
+                    var instance = sEffect[10].CreateInstance();
+                    instance.Volume = 0.05f;
+                    instance.Play();
+                    allow_effectend = false;
+                }
             }
 
             end_character = new Vector2(0, end_character_value);
@@ -748,6 +775,7 @@ namespace Jam2024
             hand_position = new Vector2(700, 330);
             clicktrue = ClickState.none;
             IsHighscore = false;
+            allow_effectend = true;
         }
     }
 }

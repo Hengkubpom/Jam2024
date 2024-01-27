@@ -472,6 +472,12 @@
 /processorParam:Quality=Best
 /build:Sound/death.wav
 
+#begin Sound/endgame_sound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sound/endgame_sound.wav
+
 #begin Sound/eto.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -483,6 +489,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sound/gungai.wav
+
+#begin Sound/highscore_sound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sound/highscore_sound.wav
 
 #begin Sound/hurt_itai.wav
 /importer:WavImporter
@@ -543,6 +555,30 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:UI/bar.png
+
+#begin UI/cursor/cursor_glove.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/cursor/cursor_glove.png
+
+#begin UI/cursor/cursor.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/cursor/cursor.png
 
 #begin UI/enter.PNG
 /importer:TextureImporter

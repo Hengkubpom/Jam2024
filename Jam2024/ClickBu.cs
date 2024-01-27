@@ -30,10 +30,6 @@ namespace Jam2024
         public void Update(float elapsed)
         {
             scale += 0.5f;
-            if(scale > 86)
-            {
-                scale = 86;
-            }
             posbox = new Rectangle((int)pos.X, (int)pos.Y, 80, 80);
             hitbox = new Rectangle ((int)(pos.X-((hitbox.Width-80)/2)), (int)(pos.Y-((hitbox.Height-80)/2)), (int)(170-scale), (int)(170-scale));
             

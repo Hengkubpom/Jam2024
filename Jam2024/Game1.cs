@@ -545,7 +545,7 @@ namespace Jam2024
                 if (allow_effectend)
                 {
                     var instance = sEffect[11].CreateInstance();
-                    instance.Volume = 0.3f;
+                    instance.Volume = 0.5f;
                     instance.Play();
                     allow_effectend = false;
                 }

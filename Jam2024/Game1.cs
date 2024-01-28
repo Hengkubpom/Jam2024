@@ -586,8 +586,8 @@ namespace Jam2024
             if (!opentutorial)
             {
                 _spriteBatch.Draw(Light, Vector2.Zero, Color.White);
-                _spriteBatch.Draw(highscore_menu, new Vector2(410,670), Color.White);
-                _spriteBatch.DrawString(overfont, Convert.ToString(highesttime), new Vector2(740, 705), Color.Black);
+                _spriteBatch.Draw(highscore_menu, new Rectangle(405,670,500,100), Color.White);
+                _spriteBatch.DrawString(overfont, Convert.ToString(highesttime), new Vector2(740, 690), Color.Black);
             }
             else
             {
@@ -729,6 +729,7 @@ namespace Jam2024
                     _spriteBatch.Draw(reset_button2, b_reset, Color.White);
                 }
                 _spriteBatch.DrawString(endfont, Convert.ToString(score), new Vector2(850, 460), Color.Black);
+                
             }
             else
             {

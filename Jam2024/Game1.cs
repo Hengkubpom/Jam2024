@@ -338,6 +338,7 @@ namespace Jam2024
 
             if (health <= 0)
             {
+                clickcircle.Clear();
                 hand = HandState.normal;
                 gameplay_start = false;
                 if (allow_soundend)
@@ -648,7 +649,7 @@ namespace Jam2024
                 {
                     _spriteBatch.Draw(patient[6], Vector2.Zero, Color.White);
                 }
-                else
+                else if(health > 0)
                 {
                     _spriteBatch.Draw(patient[0], Vector2.Zero, Color.White);
                 }

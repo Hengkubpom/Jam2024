@@ -184,7 +184,7 @@ namespace Jam2024
             sEffect.Add(Content.Load<SoundEffect>("Sound/death"));     //4
             sEffect.Add(Content.Load<SoundEffect>("Sound/eto"));     //5
             sEffect.Add(Content.Load<SoundEffect>("Sound/banana"));     //6
-            sEffect.Add(Content.Load<SoundEffect>("Sound/gungai"));     //7
+            sEffect.Add(Content.Load<SoundEffect>("Sound/gungai"));     //
             sEffect.Add(Content.Load<SoundEffect>("Sound/kumpe"));     //8
             sEffect.Add(Content.Load<SoundEffect>("Sound/click"));     //9
             sEffect.Add(Content.Load<SoundEffect>("Sound/endgame_sound"));     //10
